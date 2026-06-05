@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MortgageAI — Pre-Qualification System</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0f1e;
+  --surface: #111827;
+  --surface2: #1f2937;
+  --gold: #f59e0b;
+  --gold-dim: rgba(245,158,11,0.1);
+  --blue: #3b82f6;
+  --green: #10b981;
+  --red: #ef4444;
+  --text: #f9fafb;
+  --muted: #9ca3af;
+  --border: rgba(255,255,255,0.08);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+.header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 16px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.logo {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--gold);
+}
+.logo span { color: var(--text); font-style: italic; }
+.header-badge {
+  font-size: 11px;
+  color: var(--green);
+  background: rgba(16,185,129,0.1);
+  border: 1px solid rgba(16,185,129,0.2);
+  padding: 4px 12px;
+  border-radius: 20px;
+}
+
+.hero {
+  background: linear-gradient(135deg, #0a0f1e 0%, #111827 50%, #0a1628 100%);
+  padding: 80px 24px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid var(--border);
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 600px;
+  height: 400px;
+  background: radial-gradient(ellipse, rgba(245,158,11,0.08) 0%, transparent 70%);
+}
+.hero-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  color: var(--gold);
+  background: var(--gold-dim);
+  border: 1px solid rgba(245,158,11,0.2);
+  padding: 6px 16px;
+  border-radius: 20px;
+  margin-bottom: 24px;
+}
+.hero h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 700;
+  line-height: 1.1;
+  margin-bottom: 16px;
+}
+.hero h1 span { color: var(--gold); font-style: italic; }
+.hero p {
+  font-size: 16px;
+  font-weight: 300;
+  color: var(--muted);
+  max-width: 500px;
+  margin: 0 auto 40px;
+  line-height: 1.7;
+}
+.hero-stats {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  flex-wrap: wrap;
+}
+.hero-stat { text-align: center; }
+.hero-stat-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--gold);
+}
+.hero-stat-label { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+.main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 60px 24px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+}
+
+.chat-container {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: 600px;
+}
+.chat-header {
+  padding: 16px 20px;
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.chat-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold), #f97316);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+.chat-info h3 { font-size: 14px; font-weight: 600; }
+.chat-info p { font-size: 11px; color: var(--green); }
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.chat-messages::-webkit-scrollbar { width: 4px; }
+.chat-messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+.msg { display: flex; gap: 8px; max-width: 85%; }
+.msg.user { align-self: flex-end; flex-direction: row-reverse; }
+.msg-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--surface2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+.msg.bot .msg-avatar { background: linear-gradient(135deg, var(--gold), #f97316); }
+.msg-bubble {
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.msg.bot .msg-bubble { background: var(--surface2); color: var(--text); border-bottom-left-radius: 4px; }
+.msg.user .msg-bubble { background: var(--blue); color: white; border-bottom-right-radius: 4px; }
+
+.typing {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  padding: 10px 14px;
+  background: var(--surface2);
+  border-radius: 12px;
+  border-bottom-left-radius: 4px;
+  width: fit-content;
+}
+.typing span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--muted);
+  animation: bounce 1.2s infinite;
+}
+.typing span:nth-child(2) { animation-delay: 0.2s; }
+.typing span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes bounce {
+  0%, 60%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-6px); }
+}
+
+.quick-replies { display: flex; flex-wrap: wrap; gap: 8px; padding: 8px 0; }
+.quick-reply {
+  padding: 6px 14px;
+  border: 1px solid rgba(245,158,11,0.3);
+  border-radius: 20px;
+  font-size: 12px;
+  color: var(--gold);
+  cursor: pointer;
+  background: var(--gold-dim);
+  transition: all 0.2s;
+  font-family: 'Inter', sans-serif;
+}
+.quick-reply:hover { background: rgba(245,158,11,0.2); border-color: var(--gold); }
+
+.chat-input-area {
+  padding: 16px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 8px;
+}
+.chat-input {
+  flex: 1;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.chat-input:focus { border-color: var(--gold); }
+.send-btn {
+  background: var(--gold);
+  border: none;
+  border-radius: 8px;
+  padding: 10px 16px;
+  color: var(--bg);
+  font-size: 16px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.send-btn:hover { opacity: 0.85; }
+
+.dashboard { display: flex; flex-direction: column; gap: 16px; }
+.dash-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+}
+.dash-card-title {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 16px;
+}
+
+.score-display { text-align: center; padding: 20px; }
+.score-circle {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  border: 3px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 12px;
+  font-family: 'Playfair Display', serif;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--gold);
+  background: var(--gold-dim);
+  transition: all 0.5s ease;
+}
+.score-label { font-size: 12px; color: var(--muted); }
+
+.lead-info { display: flex; flex-direction: column; gap: 10px; }
+.lead-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+.lead-row:last-child { border-bottom: none; }
+.lead-key { color: var(--muted); font-weight: 400; }
+.lead-val { font-weight: 500; color: var(--text); }
+.lead-val.gold { color: var(--gold); }
+.lead-val.green { color: var(--green); }
+.lead-val.red { color: var(--red); }
+
+.status-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: rgba(16,185,129,0.08);
+  border: 1px solid rgba(16,185,129,0.15);
+  border-radius: 8px;
+  font-size: 12px;
+  color: var(--green);
+}
+
+.action-btns { display: flex; gap: 8px; }
+.action-btn {
+  flex: 1;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  transition: all 0.2s;
+  border: none;
+}
+.action-btn.primary { background: var(--gold); color: var(--bg); }
+.action-btn.secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+.action-btn:hover { opacity: 0.85; }
+
+.leads-section {
+  grid-column: 1/-1;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.leads-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.leads-header h3 { font-size: 15px; font-weight: 600; }
+.leads-count {
+  font-size: 12px;
+  color: var(--gold);
+  background: var(--gold-dim);
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+table { width: 100%; border-collapse: collapse; }
+th {
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+}
+td { padding: 14px 16px; font-size: 13px; border-bottom: 1px solid var(--border); }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: rgba(255,255,255,0.02); }
+.badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 500;
+}
+.badge.hot { background: rgba(239,68,68,0.15); color: #ef4444; }
+.badge.warm { background: rgba(245,158,11,0.15); color: var(--gold); }
+.badge.cold { background: rgba(156,163,175,0.15); color: var(--muted); }
+.badge.qualified { background: rgba(16,185,129,0.15); color: var(--green); }
+
+.footer {
+  text-align: center;
+  padding: 32px;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 12px;
+}
+.footer a { color: var(--gold); text-decoration: none; }
+
+@media(max-width:768px) {
+  .main { grid-template-columns: 1fr; }
+  .hero-stats { gap: 24px; }
+  .header { padding: 12px 16px; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">Mortgage<span>AI</span></div>
+  <div class="header-badge">🟢 System Live</div>
+</div>
+
+<div class="hero">
+  <div class="hero-badge">🏠 AI Pre-Qualification System — Powered by TheSoulxMind</div>
+  <h1>Never Miss a<br><span>Mortgage Lead</span> Again</h1>
+  <p>AI pre-qualifies every visitor instantly — collecting income, deposit, and credit score automatically while you sleep.</p>
+  <div class="hero-stats">
+    <div class="hero-stat">
+      <div class="hero-stat-num">4s</div>
+      <div class="hero-stat-label">Response Time</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-num">24/7</div>
+      <div class="hero-stat-label">Always Running</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-num">87%</div>
+      <div class="hero-stat-label">Lead Capture Rate</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-num">3x</div>
+      <div class="hero-stat-label">More Qualified Leads</div>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+
+  <div class="chat-container">
+    <div class="chat-header">
+      <div class="chat-avatar">🤖</div>
+      <div class="chat-info">
+        <h3>MortgageAI Assistant</h3>
+        <p>● Online — Typically replies instantly</p>
+      </div>
+    </div>
+    <div class="chat-messages" id="chatMessages"></div>
+    <div class="chat-input-area">
+      <input type="text" class="chat-input" id="chatInput" placeholder="Type your answer..." onkeypress="if(event.key==='Enter') sendMessage()">
+      <button class="send-btn" onclick="sendMessage()">➤</button>
+    </div>
+  </div>
+
+  <div class="dashboard">
+    <div class="dash-card">
+      <div class="dash-card-title">Lead Qualification Score</div>
+      <div class="score-display">
+        <div class="score-circle" id="scoreCircle">—</div>
+        <div class="score-label" id="scoreLabel">Complete the chat to see score</div>
+      </div>
+    </div>
+
+    <div class="dash-card">
+      <div class="dash-card-title">Captured Lead Data</div>
+      <div class="lead-info">
+        <div class="lead-row"><span class="lead-key">Name</span><span class="lead-val" id="d-name">—</span></div>
+        <div class="lead-row"><span class="lead-key">Email</span><span class="lead-val" id="d-email">—</span></div>
+        <div class="lead-row"><span class="lead-key">Property Value</span><span class="lead-val gold" id="d-property">—</span></div>
+        <div class="lead-row"><span class="lead-key">Deposit</span><span class="lead-val gold" id="d-deposit">—</span></div>
+        <div class="lead-row"><span class="lead-key">Annual Income</span><span class="lead-val" id="d-income">—</span></div>
+        <div class="lead-row"><span class="lead-key">Credit Score</span><span class="lead-val" id="d-credit">—</span></div>
+        <div class="lead-row"><span class="lead-key">Status</span><span class="lead-val" id="d-status">Pending</span></div>
+      </div>
+    </div>
+
+    <div class="dash-card">
+      <div class="dash-card-title">Actions</div>
+      <div class="status-bar" id="statusBar" style="display:none">
+        ✅ Lead captured — Broker notified automatically
+      </div>
+      <div class="action-btns" style="margin-top:12px">
+        <button class="action-btn primary" onclick="bookCall()">📅 Book Advisor Call</button>
+        <button class="action-btn secondary" onclick="resetChat()">🔄 New Lead</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="leads-section">
+    <div class="leads-header">
+      <h3>📊 Live Lead Database</h3>
+      <div class="leads-count" id="leadsCount">0 Leads Today</div>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Property Value</th>
+          <th>Deposit</th>
+          <th>Income</th>
+          <th>Credit</th>
+          <th>Score</th>
+          <th>Status</th>
+          <th>Time</th>
+        </tr>
+      </thead>
+      <tbody id="leadsTable">
+        <tr><td colspan="8" style="text-align:center;color:var(--muted);padding:40px">No leads yet — start a conversation above!</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<div class="footer">
+  Powered by <a href="#">TheSoulxMind</a> · AI Automation Agency · <a href="mailto:thesoulxmind@gmail.com">thesoulxmind@gmail.com</a>
+</div>
+
+<script>
+// ─── CONFIG ───────────────────────────────────────────────
+const WEBHOOK_URL = 'https://hook.eu1.make.com/xk873rjo2bnoj7ho5dcfwc5ohsa3s99w';
+const AI_PROXY    = '/.netlify/functions/groq-proxy'; // API key lives server-side
+
+// ─── CONVERSATION FLOW ────────────────────────────────────
+// Each step: bot message shown BEFORE we collect the answer for that key
+const steps = [
+  {
+    key: 'name',
+    bot: "👋 Hi! I'm your AI mortgage assistant. I can pre-qualify you for a mortgage in just 2 minutes.\n\nWhat's your first name?",
+    type: 'text'
+  },
+  {
+    key: 'email',
+    bot: "Great to meet you, {name}! 😊\n\nWhat's the best email to send your results to?",
+    type: 'email'
+  },
+  {
+    key: 'property',
+    bot: "Perfect! What's the approximate value of the property you're looking to buy?",
+    type: 'quick',
+    options: ['Under £200k', '£200k – £350k', '£350k – £500k', '£500k – £750k', 'Over £750k']
+  },
+  {
+    key: 'deposit',
+    bot: "Got it! How much deposit do you have available?",
+    type: 'quick',
+    options: ['Under 5%', '5% – 10%', '10% – 20%', '20% – 25%', 'Over 25%']
+  },
+  {
+    key: 'income',
+    bot: "Great! What's your approximate annual income (or combined if buying with a partner)?",
+    type: 'quick',
+    options: ['Under £25k', '£25k – £40k', '£40k – £60k', '£60k – £80k', 'Over £80k']
+  },
+  {
+    key: 'credit',
+    bot: "Almost done! How would you describe your credit history?",
+    type: 'quick',
+    options: ['Excellent', 'Good', 'Fair', 'Some issues', 'Not sure']
+  }
+];
+
+// ─── STATE ────────────────────────────────────────────────
+let currentStep = 0;
+let leadData    = {};
+let leads       = [];
+let busy        = false;
+
+// ─── AI CALL (via server-side proxy) ─────────────────────
+async function callAI(prompt) {
+  try {
+    const res = await fetch(AI_PROXY, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages: [{ role: 'user', content: prompt }] })
+    });
+    const data = await res.json();
+    return data?.choices?.[0]?.message?.content || null;
+  } catch { return null; }
+}
+
+// ─── DOM HELPERS ─────────────────────────────────────────
+function addMessage(text, isUser = false) {
+  const msgs = document.getElementById('chatMessages');
+  const div  = document.createElement('div');
+  div.className = `msg ${isUser ? 'user' : 'bot'}`;
+  div.innerHTML  = `<div class="msg-avatar">${isUser ? '👤' : '🤖'}</div>
+    <div class="msg-bubble">${text.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')}</div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function showTyping() {
+  const msgs = document.getElementById('chatMessages');
+  const div  = document.createElement('div');
+  div.id = 'typingDot';
+  div.className = 'msg bot';
+  div.innerHTML = `<div class="msg-avatar">🤖</div>
+    <div class="typing"><span></span><span></span><span></span></div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function hideTyping() {
+  document.getElementById('typingDot')?.remove();
+}
+
+function addQuickReplies(options) {
+  const msgs = document.getElementById('chatMessages');
+  const div  = document.createElement('div');
+  div.id = 'quickReplies';
+  div.className = 'msg bot';
+  div.innerHTML  = `<div class="msg-avatar" style="visibility:hidden">🤖</div>
+    <div class="quick-replies">${options.map(o =>
+      `<button class="quick-reply" onclick="pickOption('${o}')">${o}</button>`
+    ).join('')}</div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function clearQuickReplies() {
+  document.getElementById('quickReplies')?.remove();
+}
+
+async function botSay(text, delay = 800) {
+  showTyping();
+  await sleep(delay);
+  hideTyping();
+  addMessage(text);
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// ─── FLOW CONTROL ─────────────────────────────────────────
+async function startChat() {
+  currentStep = 0;
+  leadData    = {};
+  busy        = false;
+  await botSay(steps[0].bot, 600);
+}
+
+async function handleAnswer(answer) {
+  if (busy) return;
+  busy = true;
+  clearQuickReplies();
+  addMessage(answer, true);
+
+  // Store answer for current step
+  leadData[steps[currentStep].key] = answer;
+  updateDashboard();
+  currentStep++;
+
+  if (currentStep >= steps.length) {
+    await runScoring();
+  } else {
+    const next = steps[currentStep];
+    const msg  = next.bot.replace('{name}', leadData.name || 'there');
+    await botSay(msg);
+    if (next.type === 'quick') addQuickReplies(next.options);
+  }
+
+  busy = false;
+}
+
+function pickOption(val) {
+  handleAnswer(val);
+}
+
+function sendMessage() {
+  const input = document.getElementById('chatInput');
+  const val   = input.value.trim();
+  if (!val || busy) return;
+  input.value = '';
+  handleAnswer(val);
+}
+
+// ─── SCORING ──────────────────────────────────────────────
+async function runScoring() {
+  await botSay("Calculating your mortgage qualification score... 🔄", 600);
+
+  const prompt = `You are a UK mortgage pre-qualification AI. Based on this lead data, give a score 0-100 and a 2-3 sentence encouraging but honest assessment.
+
+Name: ${leadData.name}
+Property value: ${leadData.property}
+Deposit: ${leadData.deposit}
+Annual income: ${leadData.income}
+Credit history: ${leadData.credit}
+
+Respond in EXACTLY this format (no extra text):
+SCORE: [number]
+ASSESSMENT: [text]`;
+
+  const result = await callAI(prompt);
+
+  let score = 72;
+  let assessment = "Based on your profile, you appear to be a solid mortgage candidate. Your income and deposit suggest good borrowing potential. An advisor will be in touch to discuss your options.";
+
+  if (result) {
+    const sm = result.match(/SCORE:\s*(\d+)/);
+    const am = result.match(/ASSESSMENT:\s*([\s\S]+)/);
+    if (sm) score = Math.min(100, Math.max(0, parseInt(sm[1])));
+    if (am) assessment = am[1].trim();
+  }
+
+  leadData.score  = score;
+  leadData.status = score >= 70 ? 'Hot 🔥' : score >= 50 ? 'Warm ✨' : 'Needs Review';
+
+  updateScoreDisplay(score);
+  updateDashboard();
+  await saveLead();
+
+  const outcome = score >= 70
+    ? "✅ **Great news!** You're a strong candidate. An advisor will contact you within 24 hours."
+    : score >= 50
+    ? "📋 You show good potential! An advisor will review your profile and find the best options."
+    : "💬 We can still help! An advisor will review your case and find the right solution for you.";
+
+  await botSay(`🎉 Your Qualification Score: **${score}/100**\n\n${assessment}\n\n${outcome}`, 1200);
+  document.getElementById('statusBar').style.display = 'flex';
+}
+
+// ─── DASHBOARD ────────────────────────────────────────────
+function updateDashboard() {
+  const set = (id, val, cls = '') => {
+    const el = document.getElementById(id);
+    if (!el || !val) return;
+    el.textContent = val;
+    if (cls) el.className = 'lead-val ' + cls;
+  };
+  set('d-name',     leadData.name);
+  set('d-email',    leadData.email);
+  set('d-property', leadData.property);
+  set('d-deposit',  leadData.deposit);
+  set('d-income',   leadData.income);
+  if (leadData.credit) {
+    const cls = ['Excellent','Good'].includes(leadData.credit) ? 'green'
+              : leadData.credit === 'Fair' ? 'gold' : 'red';
+    set('d-credit', leadData.credit, cls);
+  }
+  if (leadData.status) set('d-status', leadData.status);
+}
+
+function updateScoreDisplay(score) {
+  const circle = document.getElementById('scoreCircle');
+  const label  = document.getElementById('scoreLabel');
+  const color  = score >= 70 ? '#10b981' : score >= 50 ? '#f59e0b' : '#ef4444';
+  const bg     = score >= 70 ? 'rgba(16,185,129,0.1)' : score >= 50 ? 'rgba(245,158,11,0.1)' : 'rgba(239,68,68,0.1)';
+  circle.textContent       = score;
+  circle.style.borderColor = color;
+  circle.style.color       = color;
+  circle.style.background  = bg;
+  label.textContent = score >= 70 ? '🔥 Highly Qualified' : score >= 50 ? '✨ Potentially Qualified' : '📋 Needs Review';
+}
+
+// ─── SAVE + WEBHOOK ───────────────────────────────────────
+async function saveLead() {
+  const lead = { ...leadData, time: new Date().toLocaleTimeString(), timestamp: new Date().toISOString() };
+  leads.unshift(lead);
+  renderLeadsTable();
+  document.getElementById('leadsCount').textContent =
+    `${leads.length} Lead${leads.length !== 1 ? 's' : ''} Today`;
+
+  // Fire-and-forget to Make.com webhook
+  fetch(WEBHOOK_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ system: 'MortgageAI-TheSoulxMind', ...lead })
+  }).catch(() => {});
+}
+
+function renderLeadsTable() {
+  const tbody = document.getElementById('leadsTable');
+  if (!leads.length) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:40px">No leads yet — start a conversation above!</td></tr>';
+    return;
+  }
+  tbody.innerHTML = leads.map(l => {
+    const sc = l.score >= 70 ? 'qualified' : l.score >= 50 ? 'warm' : 'cold';
+    const st = l.score >= 70 ? 'hot'       : l.score >= 50 ? 'warm' : 'cold';
+    return `<tr>
+      <td><strong>${l.name||'—'}</strong><br><span style="font-size:11px;color:var(--muted)">${l.email||''}</span></td>
+      <td>${l.property||'—'}</td>
+      <td>${l.deposit||'—'}</td>
+      <td>${l.income||'—'}</td>
+      <td>${l.credit||'—'}</td>
+      <td><span class="badge ${sc}">${l.score||'—'}/100</span></td>
+      <td><span class="badge ${st}">${l.status||'—'}</span></td>
+      <td style="color:var(--muted);font-size:12px">${l.time}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ─── ACTIONS ──────────────────────────────────────────────
+function bookCall() {
+  alert(`✅ Booking confirmed!\n\nAn advisor will contact ${leadData.name||'you'} at ${leadData.email||'your email'} within 24 hours.\n\nThank you for choosing MortgageAI — powered by TheSoulxMind.`);
+}
+
+function resetChat() {
+  currentStep = 0;
+  leadData    = {};
+  busy        = false;
+  document.getElementById('chatMessages').innerHTML = '';
+  document.getElementById('scoreCircle').textContent = '—';
+  document.getElementById('scoreCircle').style.cssText = '';
+  document.getElementById('scoreLabel').textContent = 'Complete the chat to see score';
+  document.getElementById('statusBar').style.display = 'none';
+  ['d-name','d-email','d-property','d-deposit','d-income','d-credit'].forEach(id => {
+    const el = document.getElementById(id);
+    el.textContent = '—';
+    el.className   = 'lead-val';
+  });
+  document.getElementById('d-status').textContent = 'Pending';
+  startChat();
+}
+
+// ─── INIT ─────────────────────────────────────────────────
+startChat();
+</script>
+</body>
+</html>
